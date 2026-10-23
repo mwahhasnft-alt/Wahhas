@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   TrendingUp,
   ChevronDown,
-  Home
+  Home,
+  Settings
 } from 'lucide-react';
 import MessageBubble from './components/MessageBubble';
 import Sidebar from './components/Sidebar';
@@ -254,6 +255,18 @@ function App() {
   // --- Settings State ---
   const [lang, setLang] = useState<Lang>('en');
   const [theme, setTheme] = useState<Theme>('light');
+  const [authError, setAuthError] = useState('');
+  const handleGoogleSignIn = async () => {
+    setAuthError('');
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error(error);
+      setAuthError(lang === 'ar'
+        ? 'تعذر تسجيل الدخول عبر Google. تأكد من السماح بالنوافذ المنبثقة وإضافة نطاق التطبيق في إعدادات Firebase.'
+        : 'Google sign-in could not finish. Allow popups and ensure this app domain is authorized in Firebase.');
+    }
+  };
   const [user, setUser] = useState<UserProfile>({
     name: "User",
     email: "user@aqarai.com",
@@ -782,6 +795,11 @@ function App() {
           onSelectRole={handleRoleSelection} 
           lang={lang} 
           setLang={setLang}
+          theme={theme}
+          setTheme={setTheme}
+          onSignIn={handleGoogleSignIn}
+          authError={authError}
+          isSignedIn={Boolean(user.isFirebaseUser)}
           onClose={() => setShowWelcomeScreen(false)}
           currentRole={user.role}
         />
@@ -812,7 +830,7 @@ function App() {
       <div className="flex-1 flex flex-col relative overflow-hidden w-full">
         
         {/* Apple Serene Minimalist Header */}
-        <header className="flex items-center justify-between px-4 sm:px-6 py-3 bg-[#FBFBFD]/80 dark:bg-[#000000]/80 backdrop-blur-2xl border-b border-black/[0.05] dark:border-white/[0.06] z-10">
+        <header className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3 bg-[#FBFBFD]/80 dark:bg-[#000000]/80 backdrop-blur-2xl border-b border-black/[0.05] dark:border-white/[0.06] z-10">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)} 
@@ -872,7 +890,16 @@ function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 w-full sm:w-auto">
+            <button
+              onClick={() => openModal('settings')}
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full text-neutral-500 dark:text-neutral-400 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors flex items-center gap-1.5 text-xs font-medium"
+              aria-label={lang === 'ar' ? 'الإعدادات' : 'Settings'}
+              title={lang === 'ar' ? 'اللغة والمظهر' : 'Language and theme'}
+            >
+              <Settings className="w-4 h-4 stroke-[1.8]" />
+              <span>{lang === 'ar' ? 'الإعدادات' : 'Settings'}</span>
+            </button>
             {/* Quick Home / Role Selection Button */}
             <button
               onClick={handleSwitchRole}
@@ -881,7 +908,7 @@ function App() {
               aria-label="Home page"
             >
               <Home className="w-4 h-4 text-[#0071E3] stroke-[1.8]" />
-              <span className="hidden lg:inline">{lang === 'ar' ? 'الرئيسية' : 'Home'}</span>
+              <span>{lang === 'ar' ? 'الرئيسية' : 'Home'}</span>
             </button>
 
             {/* User Profile / Google Sign-In */}
@@ -904,15 +931,16 @@ function App() {
               </button>
             ) : (
               <button
-                onClick={() => signInWithGoogle().catch(console.error)}
+                onClick={handleGoogleSignIn}
                 className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.10] border border-black/[0.04] dark:border-white/[0.06] text-xs font-medium text-neutral-700 dark:text-neutral-200 transition-colors"
               >
                 <Cloud className="w-3.5 h-3.5 text-[#0071E3] stroke-[1.8]" />
-                <span className="hidden sm:inline">{t.signIn}</span>
+                <span>{lang === 'ar' ? 'تسجيل الدخول' : 'Sign in'}</span>
               </button>
             )}
           </div>
         </header>
+        {authError && <p role="alert" className="px-4 py-2 text-sm text-red-600 dark:text-red-400">{authError}</p>}
 
         {/* Chat Scroll Viewport */}
         <div className="flex-1 overflow-y-auto px-2.5 sm:px-4 py-3 sm:py-6 scrollbar-thin">

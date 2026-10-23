@@ -47,6 +47,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 // Modals
 import Modal from './components/Modal';
 import SettingsModal from './components/modals/SettingsModal';
+import { ADMIN_VISIBILITY_KEY, Inventory, watchAdminAccess, setAdminButtonVisible } from './services/listingInventory';
 import ProfileModal from './components/modals/ProfileModal';
 import PropertiesModal from './components/modals/PropertiesModal';
 import PropertyDetailsModal from './components/modals/PropertyDetailsModal';
@@ -256,6 +257,12 @@ function App() {
   const [lang, setLang] = useState<Lang>('en');
   const [theme, setTheme] = useState<Theme>('light');
   const [authError, setAuthError] = useState('');
+  const [isInventoryAdmin,setIsInventoryAdmin] = useState(false);
+  const [showAdminButton,setShowAdminButton] = useState(() => localStorage.getItem(ADMIN_VISIBILITY_KEY)==='true');
+  const [inventoryStatus,setInventoryStatus] = useState<'loading'|'ready'|'error'>('loading');
+  useEffect(()=>watchAdminAccess(allowed=>setIsInventoryAdmin(allowed)),[]);
+  useEffect(()=>{const update=()=>setShowAdminButton(localStorage.getItem(ADMIN_VISIBILITY_KEY)==='true');window.addEventListener('admin-visibility',update);window.addEventListener('storage',update);return()=>{window.removeEventListener('admin-visibility',update);window.removeEventListener('storage',update)}},[]);
+  useEffect(()=>Inventory.subscribe(rows=>{PropertyService.replacePublished(rows);setDisplayedProperties(rows);setInventoryStatus('ready')},()=>{PropertyService.replacePublished([]);setDisplayedProperties([]);setInventoryStatus('error')}),[]);
   const handleGoogleSignIn = async () => {
     setAuthError('');
     try {
@@ -891,6 +898,7 @@ function App() {
           </div>
 
           <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 w-full sm:w-auto">
+            {isInventoryAdmin && showAdminButton && <button className="text-xs px-2 py-1" onClick={()=>{window.location.hash='/admin'}}>الإدارة</button>}
             <button
               onClick={() => openModal('settings')}
               className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full text-neutral-500 dark:text-neutral-400 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors flex items-center gap-1.5 text-xs font-medium"
@@ -941,6 +949,7 @@ function App() {
           </div>
         </header>
         {authError && <p role="alert" className="px-4 py-2 text-sm text-red-600 dark:text-red-400">{authError}</p>}
+        {inventoryStatus === 'error' && <p role="status" className="px-4 py-2 text-xs text-amber-700">{lang === 'ar' ? 'تعذر تحميل العقارات المنشورة. حاول مجددًا لاحقًا.' : 'Published listings could not be loaded. Please try again later.'}</p>}
 
         {/* Chat Scroll Viewport */}
         <div className="flex-1 overflow-y-auto px-2.5 sm:px-4 py-3 sm:py-6 scrollbar-thin">
@@ -1081,6 +1090,7 @@ function App() {
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'settings'} onClose={closeModal} title={t.titles.settings}>
+        {isInventoryAdmin && <div className="flex gap-2 mb-4"><button onClick={()=>setAdminButtonVisible(!showAdminButton)}>{showAdminButton?'إخفاء زر الإدارة':'إظهار زر الإدارة'}</button><button onClick={()=>{window.location.hash='/admin'}}>فتح لوحة الإدارة</button></div>}
         <SettingsModal 
             lang={lang} 
             setLang={setLang} 

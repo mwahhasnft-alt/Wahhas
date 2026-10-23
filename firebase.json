@@ -1,0 +1,5 @@
+{
+  "firestore": [{"database":"ai-studio-aqarai-26e86a5f-ad02-48e9-9896-22fafbb0bef3","rules":"firestore.rules"}],
+  "functions": [{"source":"functions","codebase":"aqar-admin"}],
+  "emulators": {"firestore":{"port":8085},"ui":{"enabled":false},"singleProjectMode":false}
+}

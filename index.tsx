@@ -6,6 +6,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { MsalProvider } from '@azure/msal-react';
 import { googleConfig } from './config/googleConfig';
 import { msalInstance } from './services/api';
+const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
+function Root() {
+  const [admin,setAdmin] = React.useState(() => window.location.hash.startsWith('#/admin') || window.location.pathname === '/admin');
+  React.useEffect(() => { const update=()=>setAdmin(window.location.hash.startsWith('#/admin') || window.location.pathname === '/admin'); window.addEventListener('hashchange',update);return()=>window.removeEventListener('hashchange',update); },[]);
+  return admin ? <React.Suspense fallback={<p dir="rtl">جاري فتح مساحة الإدارة…</p>}><AdminPanel /></React.Suspense> : <App />;
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -19,7 +25,7 @@ const renderApp = () => {
     <React.StrictMode>
       <MsalProvider instance={msalInstance}>
         <GoogleOAuthProvider clientId={googleConfig.clientId}>
-          <App />
+          <Root />
         </GoogleOAuthProvider>
       </MsalProvider>
     </React.StrictMode>

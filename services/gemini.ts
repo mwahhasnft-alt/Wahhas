@@ -79,7 +79,7 @@ export const initializeGemini = () => {
   ai = new GoogleGenAI({ apiKey });
 };
 
-export const startChatSession = (historyMessages: Message[] = [], mode: ChatMode = 'smart', role: UserRole = 'guest') => {
+export const startChatSession = (historyMessages: Message[] = [], mode: ChatMode = 'smart', role: UserRole = 'guest', query = '') => {
   if (!ai) initializeGemini();
   // Preparing local chat state must not prevent the app from opening when
   // Gemini has not been configured. Sending a message validates it separately.
@@ -100,7 +100,7 @@ export const startChatSession = (historyMessages: Message[] = [], mode: ChatMode
 
   let modelName = 'gemini-3.8-flash';
   let config: any = {
-    systemInstruction: PropertyService.getSystemPrompt(role),
+    systemInstruction: PropertyService.getSystemPrompt(role, query),
     temperature: 0.7,
   };
 
@@ -188,6 +188,8 @@ export const sendMessageToGemini = async (
 
   const mode = activeMode || autoDetectChatMode(message, !!image);
   currentMode = mode;
+  // Refresh published inventory, excluding the message sent separately below.
+  if (history) startChatSession(history.slice(0,-1), mode, currentRole, message);
 
   try {
     let text = "";
@@ -222,7 +224,7 @@ export const sendMessageToGemini = async (
         model: 'gemini-3.8-flash',
         contents: contents,
         config: {
-          systemInstruction: PropertyService.getSystemPrompt(currentRole),
+          systemInstruction: PropertyService.getSystemPrompt(currentRole, message),
           temperature: 0.7
         }
       });
@@ -237,7 +239,7 @@ export const sendMessageToGemini = async (
           model: 'gemini-3.5-flash',
           contents: message,
           config: {
-            systemInstruction: PropertyService.getSystemPrompt(currentRole),
+            systemInstruction: PropertyService.getSystemPrompt(currentRole, message),
             tools: [{ googleMaps: {} }],
             toolConfig: {
               retrievalConfig: {
@@ -256,7 +258,7 @@ export const sendMessageToGemini = async (
           model: 'gemini-3.5-flash',
           contents: message,
           config: {
-            systemInstruction: PropertyService.getSystemPrompt(currentRole),
+            systemInstruction: PropertyService.getSystemPrompt(currentRole, message),
             tools: [{ googleSearch: {} }]
           }
         });

@@ -10,18 +10,21 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^19.2.3",
-    "lucide-react": "^0.562.0",
-    "react-dom": "^19.2.3",
-    "@google/genai": "^1.35.0",
-    "@azure/msal-react": "^3.0.24",
-    "@react-oauth/google": "^0.13.4",
     "@azure/msal-browser": "^4.28.0",
-    "firebase": "^12.8.0"
+    "@azure/msal-react": "^3.0.24",
+    "@google/genai": "^1.35.0",
+    "@react-oauth/google": "^0.13.4",
+    "firebase": "^12.8.0",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "firebase-tools": "^14.27.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

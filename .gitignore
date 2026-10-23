@@ -10,6 +10,10 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+functions/node_modules
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 *.local
 
 # Editor directories and files

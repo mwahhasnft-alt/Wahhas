@@ -688,7 +688,9 @@ function App() {
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        content: lang === 'ar' ? "عذراً، حدث خطأ أثناء الاتصال بالخادم." : "Sorry, an error occurred while connecting to the server.",
+        content: error instanceof Error && error.message === 'Gemini AI not initialized'
+          ? (lang === 'ar' ? 'المحادثة الذكية غير مفعّلة بعد. يلزم إعداد خدمة Gemini لتشغيلها، ويمكنك متابعة تصفح التطبيق.' : 'AI chat is not configured yet. Set up Gemini to enable it. You can still explore the app.')
+          : (lang === 'ar' ? "عذراً، حدث خطأ أثناء الاتصال بالخادم." : "Sorry, an error occurred while connecting to the server."),
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMsg]);

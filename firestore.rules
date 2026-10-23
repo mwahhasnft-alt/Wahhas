@@ -1,0 +1,160 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Helpers
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'm-w781@hotmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Entity Validation: UserProfile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'name', 'role']) &&
+             data.keys().hasOnly(['uid', 'email', 'name', 'phone', 'role', 'photoURL', 'createdAt', 'updatedAt']) &&
+             data.uid == request.auth.uid &&
+             data.email is string && data.email.size() <= 256 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+             (data.role in ['buyer', 'seller', 'investor', 'agent', 'guest', 'admin']) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 32)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024));
+    }
+
+    // Entity Validation: SavedProperty
+    function isValidSavedProperty(data) {
+      return data.keys().hasAll(['id', 'userId', 'propertyId', 'title']) &&
+             data.keys().hasOnly(['id', 'userId', 'propertyId', 'title', 'price', 'city', 'type', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.id is string && data.id.size() <= 128 &&
+             data.propertyId is string && data.propertyId.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 256 &&
+             (!('price' in data) || data.price is number) &&
+             (!('city' in data) || (data.city is string && data.city.size() <= 64)) &&
+             (!('type' in data) || (data.type is string && data.type.size() <= 64));
+    }
+
+    // Entity Validation: ChatSession
+    function isValidChatSession(data) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'mode']) &&
+             data.keys().hasOnly(['id', 'userId', 'title', 'mode', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 256 &&
+             (data.mode in ['smart', 'fast', 'thinking', 'search', 'maps', 'science']);
+    }
+
+    // Entity Validation: ChatMessage
+    function isValidChatMessage(data) {
+      return data.keys().hasAll(['id', 'sessionId', 'userId', 'role', 'content']) &&
+             data.keys().hasOnly(['id', 'sessionId', 'userId', 'role', 'content', 'createdAt', 'image', 'groundingSources', 'scienceData']) &&
+             data.userId == request.auth.uid &&
+             data.id is string && data.id.size() <= 128 &&
+             data.sessionId is string && data.sessionId.size() <= 128 &&
+             (data.role in ['user', 'model', 'system']) &&
+             data.content is string && data.content.size() <= 20000;
+    }
+
+    // Entity Validation: PropertyInquiry
+    function isValidPropertyInquiry(data) {
+      return data.keys().hasAll(['id', 'userId', 'propertyId', 'propertyTitle', 'userName', 'status']) &&
+             data.keys().hasOnly(['id', 'userId', 'propertyId', 'propertyTitle', 'userName', 'userPhone', 'userEmail', 'message', 'status', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.id is string && data.id.size() <= 128 &&
+             data.propertyId is string && data.propertyId.size() <= 128 &&
+             data.propertyTitle is string && data.propertyTitle.size() <= 256 &&
+             data.userName is string && data.userName.size() <= 128 &&
+             (data.status in ['pending', 'contacted', 'closed']) &&
+             (!('message' in data) || (data.message is string && data.message.size() <= 2000));
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());
+      allow update: if (isOwner(userId) || isAdmin()) &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().uid == existing().uid;
+      allow delete: if isAdmin();
+    }
+
+    // 2. Saved Properties Collection
+    match /saved_properties/{savedPropertyId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidId(savedPropertyId) && isValidSavedProperty(incoming());
+      allow update: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin()) &&
+                       isValidId(savedPropertyId) &&
+                       isValidSavedProperty(incoming()) &&
+                       incoming().userId == existing().userId;
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // 3. Chat Sessions Collection
+    match /chat_sessions/{sessionId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidId(sessionId) && isValidChatSession(incoming());
+      allow update: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin()) &&
+                       isValidId(sessionId) &&
+                       isValidChatSession(incoming()) &&
+                       incoming().userId == existing().userId;
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+
+      // 4. Subcollection: Messages
+      match /messages/{messageId} {
+        allow get: if isSignedIn() && (
+          get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.userId == request.auth.uid || isAdmin()
+        );
+        allow list: if isSignedIn() && (
+          get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.userId == request.auth.uid || isAdmin()
+        );
+        allow create: if isSignedIn() && isValidId(messageId) && isValidChatMessage(incoming()) &&
+          (get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.userId == request.auth.uid || isAdmin());
+        allow update: if false; // Messages are immutable
+        allow delete: if isSignedIn() && (
+          get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.userId == request.auth.uid || isAdmin()
+        );
+      }
+    }
+
+    // 5. Inquiries Collection
+    match /inquiries/{inquiryId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidId(inquiryId) && isValidPropertyInquiry(incoming());
+      allow update: if (isAdmin() || (isSignedIn() && existing().userId == request.auth.uid)) &&
+                       isValidId(inquiryId) &&
+                       isValidPropertyInquiry(incoming());
+      allow delete: if isAdmin();
+    }
+  }
+}

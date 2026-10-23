@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aqar AI</title>
+    <meta name="description" content="A Saudi real-estate assistant specialized in the KSA market, providing a ChatGPT-like experience for buying, renting, and investing." />
+    <meta property="og:title" content="Aqar AI" />
+    <meta property="og:description" content="A Saudi real-estate assistant specialized in the KSA market, providing a ChatGPT-like experience for buying, renting, and investing." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"Plus Jakarta Sans"', '"Noto Sans Arabic"', 'system-ui', 'sans-serif'],
+              display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Plus Jakarta Sans"', '"Noto Sans Arabic"', 'sans-serif'],
+            },
+            colors: {
+              apple: {
+                canvas: '#FBFBFD',
+                dark: '#000000',
+                card: '#FFFFFF',
+                cardDark: '#161618',
+                blue: '#0071E3',
+                blueHover: '#0077ED',
+                border: 'rgba(0, 0, 0, 0.08)',
+                borderDark: 'rgba(255, 255, 255, 0.10)',
+                text: '#1D1D1F',
+                textDark: '#F5F5F7',
+                muted: '#86868B',
+                subtle: 'rgba(0, 0, 0, 0.04)',
+                subtleDark: 'rgba(255, 255, 255, 0.06)'
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      /* Apple Minimalist Scrollbar */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.25);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      ::selection {
+        background-color: rgba(0, 113, 227, 0.2);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "@azure/msal-react": "https://esm.sh/@azure/msal-react@^3.0.24",
+    "@react-oauth/google": "https://esm.sh/@react-oauth/google@^0.13.4",
+    "@azure/msal-browser": "https://esm.sh/@azure/msal-browser@^4.28.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+    "firebase/": "https://esm.sh/firebase@^12.8.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 h-screen overflow-hidden transition-colors duration-200">
+    <div id="root" class="h-full"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

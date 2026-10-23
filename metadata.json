@@ -1,0 +1,10 @@
+{
+  "name": "Aqar AI",
+  "description": "A Saudi real-estate assistant specialized in the KSA market, providing a ChatGPT-like experience for buying, renting, and investing.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

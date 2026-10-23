@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserRole, Lang } from '../types';
+import { UserRole, Lang, Theme } from '../types';
 import { 
   ShoppingBag, 
   Tag, 
@@ -7,7 +7,9 @@ import {
   Users, 
   ArrowRight, 
   Globe, 
-  MessageSquare
+  MessageSquare,
+  Moon,
+  Sun
 } from 'lucide-react';
 import Logo from './Logo';
 
@@ -15,6 +17,11 @@ interface WelcomeScreenProps {
   onSelectRole: (role: UserRole) => void;
   lang: Lang;
   setLang: (lang: Lang) => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  onSignIn: () => void;
+  authError: string;
+  isSignedIn: boolean;
   onClose?: () => void;
   currentRole?: UserRole;
 }
@@ -23,6 +30,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onSelectRole, 
   lang, 
   setLang,
+  theme,
+  setTheme,
+  onSignIn,
+  authError,
+  isSignedIn,
   onClose,
   currentRole
 }) => {
@@ -98,6 +110,19 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <div />
         )}
 
+        <div className="flex flex-wrap justify-end items-center gap-2">
+        {!isSignedIn && <button
+          onClick={onSignIn}
+          className="px-3 py-1.5 rounded-full text-xs font-medium bg-white/80 dark:bg-[#161618]/80 text-neutral-700 dark:text-neutral-300 border border-black/[0.06] dark:border-white/[0.08] shadow-sm"
+        >{isAr ? 'تسجيل الدخول' : 'Sign in'}</button>}
+        <button
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 dark:bg-[#161618]/80 border border-black/[0.06] dark:border-white/[0.08] rounded-full text-xs font-medium text-neutral-700 dark:text-neutral-300 shadow-sm"
+          aria-label={isAr ? (theme === 'light' ? 'الوضع الداكن' : 'الوضع الفاتح') : (theme === 'light' ? 'Dark mode' : 'Light mode')}
+        >
+          {theme === 'light' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+          <span>{isAr ? (theme === 'light' ? 'داكن' : 'فاتح') : (theme === 'light' ? 'Dark' : 'Light')}</span>
+        </button>
         <button
           onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 dark:bg-[#161618]/80 backdrop-blur-xl border border-black/[0.06] dark:border-white/[0.08] rounded-full text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition-all shadow-sm"
@@ -105,7 +130,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <Globe className="w-3.5 h-3.5 stroke-[1.8]" />
           <span>{lang === 'en' ? 'العربية' : 'English'}</span>
         </button>
+        </div>
       </div>
+      {authError && <p role="alert" className="z-20 text-sm text-red-600 dark:text-red-400 max-w-lg text-center">{authError}</p>}
 
       {/* Main Container */}
       <div className="z-10 w-full max-w-2xl flex flex-col items-center animate-in fade-in duration-400 py-3 sm:py-6">

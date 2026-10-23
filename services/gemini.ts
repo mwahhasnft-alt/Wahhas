@@ -81,7 +81,12 @@ export const initializeGemini = () => {
 
 export const startChatSession = (historyMessages: Message[] = [], mode: ChatMode = 'smart', role: UserRole = 'guest') => {
   if (!ai) initializeGemini();
-  if (!ai) throw new Error("Gemini AI not initialized (Missing API Key)");
+  // Preparing local chat state must not prevent the app from opening when
+  // Gemini has not been configured. Sending a message validates it separately.
+  if (!ai) {
+    chatSession = null;
+    return null;
+  }
 
   currentMode = mode;
   currentRole = role;
